@@ -1035,6 +1035,7 @@
   }
   </script>
 <script defer src="https://umami.anidem.net/script.js" data-website-id="18d167fb-757a-4606-a0d5-b55f6b9f2c99"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
 </head>
 <body>
   <div class="progress" aria-hidden="true"></div>
@@ -1356,6 +1357,7 @@
                 <span class="field-error" id="error-message"></span>
               </div>
             </div>
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAAFd3FJMHcmEQ53vB" data-theme="dark"></div>
             <div class="form-actions">
               <button class="button light" type="submit"><span class="button-label">Send inquiry</span> <span class="arrow" aria-hidden="true">→</span></button>
               <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
@@ -1595,6 +1597,7 @@
         }).then(function () {
           submitButton.disabled = false;
           submitLabel.textContent = 'Send inquiry';
+          if (window.turnstile) { try { turnstile.reset(); } catch (err) {} }
         });
       });
 
