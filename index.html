@@ -1575,10 +1575,24 @@
           firstInvalid.focus();
           return;
         }
+        // Turnstile first: never send (or show an error) before verification
+        // has produced a token. Managed mode usually completes on page load;
+        // if it hasn't yet, wait neutrally instead of failing in red.
+        var tsToken = '';
+        if (window.turnstile) { try { tsToken = turnstile.getResponse() || ''; } catch (err) {} }
+        if (window.turnstile && !tsToken) {
+          formStatus.textContent = 'Completing verification — one moment, then hit Send again.';
+          formStatus.classList.remove('error');
+          return;
+        }
         submitButton.disabled = true;
         submitLabel.textContent = 'Sending…';
         formStatus.textContent = 'Sending your inquiry…';
-        var body = new URLSearchParams(new FormData(inquiryForm)).toString();
+        var formData = new FormData(inquiryForm);
+        // Append the token explicitly from the widget API instead of relying
+        // on the hidden cf-turnstile-response field surviving FormData.
+        if (tsToken) formData.set('cf-turnstile-response', tsToken);
+        var body = new URLSearchParams(formData).toString();
         var postUrl = inquiryForm.getAttribute('action').split('?')[0] || '/';
 
         fetch(postUrl, {
