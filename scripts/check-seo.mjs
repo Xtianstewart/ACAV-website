@@ -79,6 +79,12 @@ if (html.includes('>Phoenix AV labor and event staffing.<span class="hero-ready"
 } else {
   fail('retarget: H1 does not match the Job 2 PR 1 target');
 }
+if (html.includes('Phoenix AV labor and event staffing for the call, the show and the strike.')
+  && !html.includes('Arizona AV labor and event staffing for the call')) {
+  pass('retarget: hero paragraph opens "Phoenix AV labor and event staffing for the call…"');
+} else {
+  fail('retarget: hero paragraph opener does not match the Job 2 PR 1 ruling (Arizona → Phoenix)');
+}
 
 // --- _headers ---------------------------------------------------------------
 const headers = read('_headers');
