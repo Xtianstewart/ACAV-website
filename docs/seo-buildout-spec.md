@@ -98,3 +98,11 @@ Retarget applied 2026-10-29 (Job 2 PR 1, copy only — no layout change; og:/twi
 - Title: "Phoenix AV Labor & Event Staffing Crews | ACAV LLC"
 - Meta: "Phoenix AV labor and event staffing crews: stagehands, technicians and production support for corporate events, concerts and conventions, valleywide."
 - H1 (static text): "Phoenix AV labor and event staffing." + "Show-ready." + rotator
+
+### PR 3 — /av-staffing/ (built 2026-10-29)
+
+- Audience: event planners, corporate buyers, venues. Intent: AV staffing services, event staffing, event AV crew.
+- Title: "AV Staffing Services in Phoenix, AZ | ACAV LLC" — H1: "AV staffing services for events that run on cue." — CTA: request a quote (hero, tiers, form).
+- Framing per Christian's brief: service depth (roles, full event arc, changes absorbed, lead on site), event types, how booking works, insured/professional crew framing.
+- Differentiation from /av-labor/ is enforced in checks: this page never says "Request crew" or "call sheet" (that is /av-labor/'s language) and its primary keyword (AV staffing services) is its own.
+- Cross-links: /av-staffing/ points to /av-labor/ (production companies) and /event-staffing-phoenix/; the homepage crew section links both service pages; /av-labor/ already links forward here.
