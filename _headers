@@ -3,3 +3,15 @@
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://umami.phoenixavstaffing.com https://umami.anidem.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; media-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://umami.phoenixavstaffing.com https://umami.anidem.net; form-action 'self' https://script.google.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; object-src 'none'
+
+/ACAV-Client-Labor-Service-Agreement.pdf
+  X-Robots-Tag: noindex
+
+/ACAV-Independent-Contractor-Agreement.pdf
+  X-Robots-Tag: noindex
+
+/ACAV-Sole-Proprietor-Waiver.pdf
+  X-Robots-Tag: noindex
+
+/W9-blank.pdf
+  X-Robots-Tag: noindex
