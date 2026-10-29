@@ -63,6 +63,29 @@ if (!/AggregateRating/.test(html) && !types.has('Review')) {
   fail('review/rating markup present (site displays no reviews)');
 }
 
+// --- Homepage retarget (Job 2 PR 1, applied 2026-10-29) ----------------------
+if (html.includes('<title>Phoenix AV Labor &amp; Event Staffing Crews | ACAV LLC</title>')) {
+  pass('retarget: title is "Phoenix AV Labor & Event Staffing Crews | ACAV LLC"');
+} else {
+  fail('retarget: homepage title does not match the Job 2 PR 1 target');
+}
+if (html.includes('<meta name="description" content="Phoenix AV labor and event staffing crews: stagehands, technicians and production support for corporate events, concerts and conventions, valleywide."')) {
+  pass('retarget: meta description matches the Job 2 PR 1 target');
+} else {
+  fail('retarget: meta description does not match the Job 2 PR 1 target');
+}
+if (html.includes('>Phoenix AV labor and event staffing.<span class="hero-ready">Show-ready.</span>')) {
+  pass('retarget: H1 opens "Phoenix AV labor and event staffing." + "Show-ready."');
+} else {
+  fail('retarget: H1 does not match the Job 2 PR 1 target');
+}
+if (html.includes('Phoenix AV labor and event staffing for the call, the show and the strike.')
+  && !html.includes('Arizona AV labor and event staffing for the call')) {
+  pass('retarget: hero paragraph opens "Phoenix AV labor and event staffing for the call…"');
+} else {
+  fail('retarget: hero paragraph opener does not match the Job 2 PR 1 ruling (Arizona → Phoenix)');
+}
+
 // --- _headers ---------------------------------------------------------------
 const headers = read('_headers');
 const pdfs = [

@@ -62,3 +62,39 @@ If copy needs proof details Adam does not have (specific venues, past jobs, the 
 - `sitemap.xml`: exactly one URL (the homepage). `robots.txt`: allow-all + sitemap reference; PDFs not blocked.
 - Repo root PDFs: the three agreements + W9-blank.pdf, filenames as listed in Job 1 item 2.
 - No build step exists in the repo (pure static) — hence the generator + Action mechanism in item 3.
+
+## Job 1 completion log (2026-10-29)
+
+- PR #13 merged 2026-10-29 (merge commit 015a2c0) and deployed.
+- Phase 1 live verification PASSED (AgentX, curl) and independently confirmed (Adam, curl): all four PDFs return `x-robots-tag: noindex` and remain downloadable (HTTP 200); the generated sitemap is live and valid.
+- The sitemap workflow file (`.github/workflows/sitemap.yml`) is added by Christian via the web UI (neither connector holds the GitHub workflows permission — 403 on both sides). Until it lands, the freshness check in `scripts/check-seo.mjs` is the enforcement at PR review.
+- Remaining Phase 1 item on Christian's side: the www→apex redirect rule (Cloudflare dashboard).
+
+## Job 2 record (added 2026-10-29, from the consolidated brief)
+
+### Approved public claim
+
+"Crew confirmed within 24 hours, guaranteed." — use on the service pages and the local page.
+
+### Venue roster
+
+Venues ACAV has crewed (Christian holds verified proof for every one). Rule: do not shorten, substitute, or add names; for tighter page subsets, pick from this list only.
+
+Phoenix Convention Center · Sheraton Phoenix Downtown · The Phoenician · Fairmont Scottsdale Princess · JW Marriott Camelback Inn · JW Marriott Desert Ridge · Arizona Biltmore · Arizona Grand Resort · Caesars Republic Scottsdale · Sanctuary Camelback Mountain · Four Seasons Resort Scottsdale · Omni Scottsdale Resort & Spa at Montelucia · Omni Tempe · Mountain Shadows Resort · The Scott Resort & Spa · Hotel Valley Ho · W Scottsdale · Andaz Scottsdale · The Global Ambassador · The Camby · Ritz-Carlton · State Farm Stadium · Talking Stick Resort · Wild Horse Pass · Gila River Resorts & Casinos · Hyatt Regency Phoenix · Kimpton Palomar Phoenix · Kimpton Miralina · Tempe Mission Palms · Renaissance Phoenix Glendale · Hilton Phoenix Tapatio Cliffs · Phoenix Marriott Resort Tempe at The Buttes · Scottsdale Marriott at McDowell Mountains · Hilton Scottsdale · DoubleTree Resorts & Suites · Embassy Suites · Sonesta Suites · Hotel Adeline · The Remi · Cambria · SpringHill Suites · Aloft · Courtyard by Marriott · AC Hotel · Westin · The McCormick · SLS — and more; coverage is valleywide across the Phoenix metro.
+
+### Homepage retarget — before-snapshot and record
+
+Before-snapshot, captured live 2026-10-29 (Xtian's Phase 0 baseline; Adam's verification agrees):
+
+- Title: "AV Labor & Event Staffing Crews in Phoenix, AZ | ACAV LLC"
+- Meta: "Hire Phoenix AV labor and event staffing crews: stagehands, technicians and production support for corporate events, concerts and conventions valleywide."
+- H1 (static text): "Arizona AV labor." + "Show-ready." + rotator
+- Canonical: https://phoenixavstaffing.com/ (self-referencing)
+- Schema: ProfessionalService + Service + OfferCatalog, no review markup
+- Search Console baseline, last 3 months: 6 clicks / 38 impressions, all clicks to the homepage, mobile position 5.6 / desktop 17.4
+
+Retarget applied 2026-10-29 (Job 2 PR 1, copy only — no layout change; og:/twitter: mirror title and meta as before; rotator and "Show-ready." untouched):
+
+- Title: "Phoenix AV Labor & Event Staffing Crews | ACAV LLC"
+- Meta: "Phoenix AV labor and event staffing crews: stagehands, technicians and production support for corporate events, concerts and conventions, valleywide."
+- H1 (static text): "Phoenix AV labor and event staffing." + "Show-ready." + rotator
