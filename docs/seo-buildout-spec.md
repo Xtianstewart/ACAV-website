@@ -1,0 +1,64 @@
+# SEO Build-Out Spec — ACAV Website (phoenixavstaffing.com)
+
+Status: FINALIZED. Origin: Xtian's brief to Adam (2026-10-29) plus Xtian's ruling answers the same day. This document is the spec of record for the SEO build-out; where any chat summary differs, this file wins.
+
+Workflow (per brief): branch → PR → AgentX reviews → Xtian merges → Cloudflare Pages deploys. Merges are Xtian's.
+
+Hard rule for everything: all content in the raw static HTML. Nothing important injected by JavaScript.
+
+## Job 1 — Technical foundation (one PR)
+
+1. **Canonical — CLOSED AS VERIFIED, no build.** Homepage canonical is already present and correct: self-referencing `https://phoenixavstaffing.com/` (https apex, trailing slash). Verified independently by Adam (repo source) and Xtian (live HTML) on 2026-10-29. Baseline redirects (http-apex and https-www → https apex, one hop) are left alone.
+2. **PDF noindex via `_headers`.** Append one block per file to the EXISTING `_headers` file setting `X-Robots-Tag: noindex`:
+   - `/ACAV-Client-Labor-Service-Agreement.pdf`
+   - `/ACAV-Independent-Contractor-Agreement.pdf`
+   - `/ACAV-Sole-Proprietor-Waiver.pdf`
+   - `/W9-blank.pdf` (fourth block added by Xtian's ruling — same class: stays downloadable, leaves the index)
+   Do NOT block these in robots.txt — Google cannot see a noindex on a blocked URL. robots.txt stays untouched. The files remain publicly downloadable.
+3. **Generated sitemap.** Replace the hand-maintained `sitemap.xml` (currently exactly one URL) with one generated from the site's page list (`sitemap-pages.json`) by `scripts/generate-sitemap.mjs`. Approved mechanism (Xtian's ruling): generator script + a GitHub Action that rebuilds the sitemap when the page list changes — the logic lives in the repo where PR review can see it, not in dashboard settings. The sitemap must list ONLY canonical 200-status pages: never the PDFs, never the crew subdomain, never redirected URLs. Homepage is the only page until Job 2 lands.
+4. **Homepage schema — CLOSED AS VERIFIED, no build.** Live schema is ProfessionalService + Service + OfferCatalog matching the visible content, with no review/rating markup (none is displayed on the page). Verified by both sides 2026-10-29.
+5. **Render checks in the repo.** `scripts/check-seo.mjs` is committed with this PR so AgentX can rerun the exact checks at review: canonical correctness, one H1, schema types + no review markup, the four `_headers` noindex blocks, robots.txt not blocking the PDFs, and sitemap freshness + canonical-only URLs.
+
+Known caveat (for the reviewer): the sitemap Action commits back to `main` on push. If branch protection blocks the Actions bot push, the freshness check in `scripts/check-seo.mjs` is the backstop — run it in any PR that adds or removes a page and include the regenerated sitemap in that PR.
+
+## Job 2 — P0 pages (separate PRs, only after Job 1)
+
+Same design system as the current site — same header, footer, CSS, black-and-white theme. This is NOT a redesign; the homepage keeps its look.
+
+1. **Homepage retarget (copy only, no layout change):** keep the ACAV brand name and core phrases in the title and H1. Retarget toward "AV labor and event staffing, Phoenix." Before/after and the change date recorded in the PR. The before-snapshot is Xtian's (already captured in his Phase 0 baseline: title, meta, H1, canonical, schema state) and is passed with the Job 2 go.
+2. **NEW `/av-labor/`** — primary intent: AV labor, AV labor companies, subcontract and overflow crew. Audience: production companies and AV vendors who need crew. CTA: request crew.
+3. **NEW `/av-staffing/`** — primary intent: AV staffing services, event AV crew. Audience: planners, corporate buyers, venues. Must NOT read like /av-labor/ — different audience, different examples, different CTA (quote request), or Google treats them as duplicates.
+4. **NEW `/event-staffing-phoenix/`** — primary intent: event staffing Phoenix, local intent. Audience: local planners and venues. Needs real local proof — Phoenix venues and jobs, supplied by Christian; never text that could be swapped onto any city.
+
+### Pre-merge gate — every page, no exceptions
+
+- Unique title + meta description; exactly one H1 containing the page's primary keyword
+- 500+ words of original copy with real ACAV specifics: three labor tiers (Tier 1 basic support $350/day, Tier 2 skilled techs $650, Tier 3 lead operators $1,000 — full-day, estimate-marked as on the current site), 500+ shows crewed, valleywide Arizona coverage, the booking process and turnaround
+- Internal links in and out, descriptive anchor text; cross-link the three new pages to each other and the homepage; never the same primary keyword on two pages
+- Quote form + click-to-call (480-330-0543) on every page
+- Self-referencing canonical; page included in the generated sitemap; valid schema
+- Labor-only clarity where relevant: ACAV provides crew and labor, not equipment
+
+### Form + analytics (rides with the Job 2 form work)
+
+- Add a "How did you hear about us?" field to the quote form. Note: the Apps Script relay must pass the new field through or it will not reach the inbox — verify with an end-to-end test submission and note the test in the PR.
+- Wire three Umami events, page URL attached to each: `quote_form_submit`, `click_to_call`, `quote_button_click`. Test each one end-to-end and note the test in the PR.
+
+### Proof details
+
+If copy needs proof details Adam does not have (specific venues, past jobs, the turnaround number), flag it in the PR rather than inventing specifics — Christian supplies them with the Job 2 go.
+
+## Out of scope
+
+- The www→apex redirect rule is a Cloudflare dashboard change on Christian's side. Do not touch DNS or Cloudflare settings.
+- No redesign, no layout changes to the homepage.
+
+## Verification log
+
+2026-10-29, Adam, against repo `Xtianstewart/ACAV-website` main (7d4a364):
+
+- `index.html`: canonical `https://phoenixavstaffing.com/` present exactly once; exactly one `<h1>`; JSON-LD present with ProfessionalService and Service types; no AggregateRating / Review markup. Umami script present (umami.anidem.net, website ID matches). One inquiry form (Apps Script), fields: name, company, email, phone, event_date, message. Click-to-call `tel:+14803300543` present.
+- `_headers`: exists (security headers from PR #4); no X-Robots-Tag yet.
+- `sitemap.xml`: exactly one URL (the homepage). `robots.txt`: allow-all + sitemap reference; PDFs not blocked.
+- Repo root PDFs: the three agreements + W9-blank.pdf, filenames as listed in Job 1 item 2.
+- No build step exists in the repo (pure static) — hence the generator + Action mechanism in item 3.
