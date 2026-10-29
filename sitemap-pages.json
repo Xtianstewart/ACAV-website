@@ -1,1 +1,15 @@
-{"baseUrl":"https://phoenixavstaffing.com","pages":[{"changefreq":"monthly","path":"/","priority":"1.0"}]}
+{
+  "baseUrl": "https://phoenixavstaffing.com",
+  "pages": [
+    {
+      "changefreq": "monthly",
+      "path": "/",
+      "priority": "1.0"
+    },
+    {
+      "path": "/av-labor/",
+      "changefreq": "monthly",
+      "priority": "0.8"
+    }
+  ]
+}

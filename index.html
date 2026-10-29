@@ -1206,6 +1206,7 @@
           </div>
         </article>
         <p class="pricing-note">All pricing is estimated. Most positions fall within these ranges — final quotes depend on event scope, dates, location, crew size, and schedule. Contact us for an exact quote.</p>
+        <p class="pricing-note">Production companies and AV vendors: <a href="/av-labor/">subcontract and overflow AV labor</a> — bring ACAV in under your call sheet when the show outgrows your roster.</p>
       </div>
     </section>
 
@@ -1349,6 +1350,17 @@
                 <label for="inquiry-date">Event date <span class="optional">/ optional</span></label>
                 <input id="inquiry-date" name="event_date" type="date" aria-describedby="error-date">
                 <span class="field-error" id="error-date"></span>
+              </div>
+              <div class="form-field">
+                <label for="inquiry-hear">How did you hear about us? <span class="optional">/ optional</span></label>
+                <select id="inquiry-hear" name="hear_about_us">
+                  <option value="">Select one</option>
+                  <option value="Google search">Google search</option>
+                  <option value="Referral">Referral</option>
+                  <option value="Repeat client">Repeat client</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
               <div class="form-field full">
                 <label for="inquiry-message">What do you need?</label>
@@ -1605,6 +1617,7 @@
           formFields.forEach(function (field) { setFieldError(field, ''); });
           formStatus.textContent = 'Inquiry sent. We’ll follow up as soon as possible.';
           formStatus.classList.add('success');
+          if (window.umami) { try { window.umami.track('quote_form_submit', { url: 'https://phoenixavstaffing.com/' }); } catch (err) {} }
         }).catch(function () {
           formStatus.textContent = 'We couldn’t send that inquiry. Please try again or call us directly.';
           formStatus.classList.add('error');
@@ -1683,5 +1696,20 @@
   </script>
 
 
+  <script>
+    (function () {
+      function track(name) {
+        if (window.umami) { try { window.umami.track(name, { url: 'https://phoenixavstaffing.com/' }); } catch (err) {} }
+      }
+      document.addEventListener('click', function (event) {
+        var t = event.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a) return;
+        var href = a.getAttribute('href') || '';
+        if (href.indexOf('tel:') === 0) track('click_to_call');
+        else if (href === '#contact') track('quote_button_click');
+      });
+    })();
+  </script>
 </body>
 </html>

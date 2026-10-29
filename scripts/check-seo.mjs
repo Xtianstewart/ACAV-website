@@ -131,5 +131,87 @@ if (locs.every((l) => l.startsWith('https://phoenixavstaffing.com/') && !l.toLow
   pass('every sitemap URL is a canonical apex page (no PDFs, no crew subdomain)');
 }
 
+// --- Measurement + inbound link on the homepage (Job 2 PR 2) ------------------
+if (html.includes('name="hear_about_us"')) pass('homepage form: "How did you hear about us?" field present');
+else fail('homepage form: hear_about_us field missing');
+for (const ev of ['quote_form_submit', 'click_to_call', 'quote_button_click']) {
+  if (html.includes(`'${ev}'`)) pass(`homepage: Umami event wired: ${ev}`);
+  else fail(`homepage: Umami event missing: ${ev}`);
+}
+if (html.includes('href="/av-labor/"')) pass('homepage links to /av-labor/ (descriptive anchor in the Crew section)');
+else fail('homepage: no link to /av-labor/');
+
+// --- /av-labor/ page (Job 2 PR 2) ----------------------------------------------
+import { existsSync } from 'node:fs';
+const AV_URL = 'https://phoenixavstaffing.com/av-labor/';
+if (!existsSync(join(root, 'av-labor/index.html'))) {
+  fail('av-labor/index.html missing');
+} else {
+  const av = read('av-labor/index.html');
+  const avCanonicals = [...av.matchAll(/<link\s+rel="canonical"\s+href="([^"]+)"/g)].map((m) => m[1]);
+  if (avCanonicals.length === 1 && avCanonicals[0] === AV_URL) pass('av-labor: canonical self-referencing https://phoenixavstaffing.com/av-labor/');
+  else fail(`av-labor: canonical found ${JSON.stringify(avCanonicals)}`);
+  const avH1s = [...av.matchAll(/<h1[\s>]/g)].length;
+  const avH1Text = (av.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '';
+  if (avH1s === 1 && avH1Text.includes('AV labor')) pass('av-labor: exactly one <h1>, contains the primary keyword "AV labor"');
+  else fail(`av-labor: <h1> count ${avH1s}, text "${avH1Text.replace(/<[^>]+>/g, '').slice(0, 60)}"`);
+  const avTitle = (av.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+  const homeTitle = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+  if (avTitle.includes('AV Labor') && avTitle !== homeTitle) pass(`av-labor: unique title — "${avTitle.replace(/&amp;/g, '&')}"`);
+  else fail(`av-labor: title problem — "${avTitle}"`);
+  const avMeta = (av.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+  const homeMeta = (html.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+  if (avMeta.length > 40 && avMeta !== homeMeta) pass('av-labor: unique meta description');
+  else fail('av-labor: meta description missing or duplicates the homepage');
+  for (const price of ['$350', '$650', '$1000']) {
+    if (av.includes(price) && av.includes('Estimate')) pass(`av-labor: tier price ${price} present, estimate-marked`);
+    else fail(`av-labor: tier price ${price} / estimate marking missing`);
+  }
+  if (av.includes('500+')) pass('av-labor: 500+ shows crewed present');
+  else fail('av-labor: "500+" shows claim missing');
+  if (av.includes('Crew confirmed within 24 hours, guaranteed')) pass('av-labor: approved 24-hour claim present');
+  else fail('av-labor: approved claim missing ("Crew confirmed within 24 hours, guaranteed")');
+  if (av.includes('name="hear_about_us"')) pass('av-labor form: "How did you hear about us?" field present');
+  else fail('av-labor form: hear_about_us field missing');
+  if (av.includes('script.google.com/macros/s/')) pass('av-labor form: posts to the Apps Script relay');
+  else fail('av-labor form: Apps Script action missing');
+  if (av.includes('href="tel:+14803300543"')) pass('av-labor: click-to-call 480-330-0543 present');
+  else fail('av-labor: click-to-call link missing');
+  for (const ev of ['quote_form_submit', 'click_to_call', 'quote_button_click']) {
+    if (av.includes(`'${ev}'`)) pass(`av-labor: Umami event wired: ${ev}`);
+    else fail(`av-labor: Umami event missing: ${ev}`);
+  }
+  const roster = ['Phoenix Convention Center', 'Sheraton Phoenix Downtown', 'The Phoenician', 'Fairmont Scottsdale Princess', 'JW Marriott Camelback Inn', 'JW Marriott Desert Ridge', 'Arizona Biltmore', 'Arizona Grand Resort', 'Caesars Republic Scottsdale', 'Sanctuary Camelback Mountain', 'Four Seasons Resort Scottsdale', 'Omni Scottsdale Resort & Spa at Montelucia', 'Omni Tempe', 'Mountain Shadows Resort', 'The Scott Resort & Spa', 'Hotel Valley Ho', 'W Scottsdale', 'Andaz Scottsdale', 'The Global Ambassador', 'The Camby', 'Ritz-Carlton', 'State Farm Stadium', 'Talking Stick Resort', 'Wild Horse Pass', 'Gila River Resorts & Casinos', 'Hyatt Regency Phoenix', 'Kimpton Palomar Phoenix', 'Kimpton Miralina', 'Tempe Mission Palms', 'Renaissance Phoenix Glendale', 'Hilton Phoenix Tapatio Cliffs', 'Phoenix Marriott Resort Tempe at The Buttes', 'Scottsdale Marriott at McDowell Mountains', 'Hilton Scottsdale', 'DoubleTree Resorts & Suites', 'Embassy Suites', 'Sonesta Suites', 'Hotel Adeline', 'The Remi', 'Cambria', 'SpringHill Suites', 'Aloft', 'Courtyard by Marriott', 'AC Hotel', 'Westin', 'The McCormick', 'SLS'];
+  const onPage = roster.filter((v) => av.includes(v));
+  if (onPage.length >= 6) pass(`av-labor: venue roster subset from the approved list (${onPage.length} venues)`);
+  else fail(`av-labor: only ${onPage.length} approved roster venues on the page (need 6+)`);
+  for (const link of ['href="/av-staffing/"', 'href="/event-staffing-phoenix/"', 'href="/"']) {
+    if (av.includes(link)) pass(`av-labor: internal link present: ${link}`);
+    else fail(`av-labor: internal link missing: ${link}`);
+  }
+  let avTypes = new Set();
+  let avLdOk = true;
+  for (const b of [...av.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1])) {
+    try {
+      const walk = (o) => {
+        if (Array.isArray(o)) return o.forEach(walk);
+        if (o && typeof o === 'object') {
+          if (o['@type']) (Array.isArray(o['@type']) ? o['@type'] : [o['@type']]).forEach((t) => avTypes.add(t));
+          Object.values(o).forEach(walk);
+        }
+      };
+      walk(JSON.parse(b));
+    } catch { avLdOk = false; }
+  }
+  if (avLdOk && avTypes.has('Service') && !/AggregateRating/.test(av)) pass('av-labor: valid schema (Service), no review markup');
+  else fail(`av-labor: schema problem (types: ${[...avTypes].join(', ') || 'none'})`);
+  const mainText = (av.match(/<main>([\s\S]*?)<\/main>/) || [])[1] || '';
+  const words = mainText.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  if (words >= 500) pass(`av-labor: ${words} words of page copy (gate: 500+)`);
+  else fail(`av-labor: only ${words} words of page copy (gate: 500+)`);
+  if (locs.includes(AV_URL)) pass('sitemap lists /av-labor/');
+  else fail('sitemap does not list /av-labor/');
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
