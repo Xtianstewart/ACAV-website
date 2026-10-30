@@ -106,3 +106,14 @@ Retarget applied 2026-10-29 (Job 2 PR 1, copy only — no layout change; og:/twi
 - Framing per Christian's brief: service depth (roles, full event arc, changes absorbed, lead on site), event types, how booking works, insured/professional crew framing.
 - Differentiation from /av-labor/ is enforced in checks: this page never says "Request crew" or "call sheet" (that is /av-labor/'s language) and its primary keyword (AV staffing services) is its own.
 - Cross-links: /av-staffing/ points to /av-labor/ (production companies) and /event-staffing-phoenix/; the homepage crew section links both service pages; /av-labor/ already links forward here.
+
+### PR 4 — /event-staffing-phoenix/ (built 2026-10-30)
+
+- Audience: event planners, corporate buyers, venues — Phoenix-local intent. First city page; last P0 page of Job 2.
+- Title: "Event Staffing in Phoenix, AZ | ACAV LLC" — H1: "Event staffing in Phoenix, handled locally." (primary keyword: event staffing in Phoenix) — CTA: request a quote (hero, form).
+- Local proof bar: 500+ words total (page ships ~1,490 in <main>) plus 300+ words of Phoenix-specific copy in the marked #phoenix-proof section (~380 words: Phoenix Convention Center / Third Street, Sheraton Phoenix Downtown, Hyatt Regency Phoenix, Kimpton Palomar Phoenix at CityScape, Arizona Biltmore, Sky Harbor, season and summer-heat operations) that could not be swapped onto another city. Local-proof venues are ONLY the five named in Christian's brief; check-seo.mjs fails the page if any other roster venue appears.
+- Approved claims only: 500+ shows crewed; "Crew confirmed within 24 hours, guaranteed."; insured/professional framing as on /av-staffing/. Tiers $350/$650/$1,000, estimate-marked, mirrored from /av-staffing/.
+- Schema: ProfessionalService + Service (@graph), no review markup. Form wired as PRs #15/#16 (Apps Script relay, hear_about_us, Turnstile, the three Umami events carrying this page's URL); click-to-call 480-330-0543.
+- Cross-links: page links to /, /av-labor/, /av-staffing/; the homepage Crew section's door line now links all three service pages; /av-labor/ and /av-staffing/ already linked forward here.
+- Differentiation enforced in checks: unique title/meta/H1 across all four pages; /av-labor/ language ("Request crew", "call sheet") kept out.
+- Turnstile is hostname-authorized for phoenixavstaffing.com only, so no preview form test was attempted; the end-to-end form test runs on the live page after merge, as with PRs #15/#16.
