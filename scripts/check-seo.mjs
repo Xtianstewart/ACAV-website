@@ -213,5 +213,23 @@ if (!existsSync(join(root, 'av-labor/index.html'))) {
   else fail('sitemap does not list /av-labor/');
 }
 
+
+// --- Homepage hero image swap --------------------------------------------------
+if (html.includes('src="images/hero-full-throttle.jpg"')) pass('hero: img points at images/hero-full-throttle.jpg');
+else fail('hero: img does not point at images/hero-full-throttle.jpg');
+if (!html.includes('src="images/img-03.jpg"')) pass('hero: old img-03.jpg reference removed');
+else fail('hero: old img-03.jpg reference still present');
+const heroTag = (html.match(/<div class="hero-media"><img[^>]*>/) || [])[0] || '';
+if (heroTag.includes('alt="LED video wall lit red and blue at a corporate event"') && heroTag.includes('width="1228"') && heroTag.includes('height="1760"')) pass('hero: alt text and 1228x1760 dimensions set');
+else fail(`hero: img tag problem — ${heroTag.slice(0, 120)}`);
+const heroRule = (html.match(/\.hero-media img \{([^}]*)\}/) || [])[1] || '';
+if (!/grayscale/.test(heroRule) && heroRule.includes('filter: contrast(1.05) brightness(.92)') && heroRule.includes('object-fit: cover') && heroRule.includes('object-position: center 30%')) pass('hero: color exception — grayscale dropped, capped filter kept, cover/position unchanged');
+else fail(`hero: CSS rule problem — ${heroRule}`);
+const tierRule = (html.match(/\.tier-image img \{([^}]*)\}/) || [])[1] || '';
+if (/grayscale\(1\)/.test(tierRule)) pass('hero-only exception: tier images remain grayscale');
+else fail('hero-only exception violated: tier images lost their grayscale');
+if (existsSync(join(root, 'images/hero-full-throttle.jpg'))) pass('hero: images/hero-full-throttle.jpg present in the repo');
+else fail('hero: images/hero-full-throttle.jpg missing from the repo');
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
