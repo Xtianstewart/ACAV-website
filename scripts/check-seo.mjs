@@ -313,5 +313,100 @@ if (!existsSync(join(root, 'av-staffing/index.html'))) {
   else fail('sitemap does not list /av-staffing/');
 }
 
+
+// --- /event-staffing-phoenix/ page (Job 2 PR 4) --------------------------------
+if (html.includes('href="/event-staffing-phoenix/"')) pass('homepage links to /event-staffing-phoenix/ (Crew section, three-door line)');
+else fail('homepage: no link to /event-staffing-phoenix/');
+const ES_URL = 'https://phoenixavstaffing.com/event-staffing-phoenix/';
+if (!existsSync(join(root, 'event-staffing-phoenix/index.html'))) {
+  fail('event-staffing-phoenix/index.html missing');
+} else {
+  const es = read('event-staffing-phoenix/index.html');
+  const esCanonicals = [...es.matchAll(/<link\s+rel="canonical"\s+href="([^"]+)"/g)].map((m) => m[1]);
+  if (esCanonicals.length === 1 && esCanonicals[0] === ES_URL) pass('event-staffing-phoenix: canonical self-referencing https://phoenixavstaffing.com/event-staffing-phoenix/');
+  else fail(`event-staffing-phoenix: canonical found ${JSON.stringify(esCanonicals)}`);
+  const esH1s = [...es.matchAll(/<h1[\s>]/g)].length;
+  const esH1Text = (es.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '';
+  const esH1Plain = esH1Text.replace(/<[^>]+>/g, '');
+  const otherH1s = [html, read('av-labor/index.html'), read('av-staffing/index.html')]
+    .map((p) => ((p.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || ''));
+  if (esH1s === 1 && esH1Plain.includes('Event staffing in Phoenix') && !otherH1s.includes(esH1Text)) pass('event-staffing-phoenix: exactly one <h1>, contains the primary keyword "Event staffing in Phoenix", distinct from the other pages');
+  else fail(`event-staffing-phoenix: <h1> count ${esH1s}, text "${esH1Plain.slice(0, 60)}"`);
+  const esTitle = (es.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+  const otherTitles = [html, read('av-labor/index.html'), read('av-staffing/index.html')]
+    .map((p) => (p.match(/<title>([^<]*)<\/title>/) || [])[1] || '');
+  if (esTitle === 'Event Staffing in Phoenix, AZ | ACAV LLC' && !otherTitles.includes(esTitle)) pass(`event-staffing-phoenix: unique title — "${esTitle}"`);
+  else fail(`event-staffing-phoenix: title problem — "${esTitle}"`);
+  const esMeta = (es.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+  const otherMetas = [html, read('av-labor/index.html'), read('av-staffing/index.html')]
+    .map((p) => (p.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '');
+  if (esMeta.startsWith('Event staffing in Phoenix') && !otherMetas.includes(esMeta)) pass('event-staffing-phoenix: unique meta description, Phoenix-first');
+  else fail('event-staffing-phoenix: meta description problem');
+  for (const price of ['$350', '$650', '$1000']) {
+    if (es.includes(price) && es.includes('Estimate')) pass(`event-staffing-phoenix: tier price ${price} present, estimate-marked`);
+    else fail(`event-staffing-phoenix: tier price ${price} / estimate marking missing`);
+  }
+  if (es.includes('500+')) pass('event-staffing-phoenix: 500+ shows crewed present');
+  else fail('event-staffing-phoenix: "500+" shows claim missing');
+  if (es.includes('Crew confirmed within 24 hours, guaranteed')) pass('event-staffing-phoenix: approved 24-hour claim present');
+  else fail('event-staffing-phoenix: approved claim missing');
+  if (/insured/i.test(es)) pass('event-staffing-phoenix: insured framing present');
+  else fail('event-staffing-phoenix: insured framing missing');
+  if (es.includes('Request a quote') && !es.includes('Request crew') && !es.toLowerCase().includes('call sheet')) pass('event-staffing-phoenix: request-a-quote CTA; /av-labor/ language ("Request crew", "call sheet") kept out');
+  else fail('event-staffing-phoenix: CTA / differentiation problem');
+  if (es.includes('name="hear_about_us"')) pass('event-staffing-phoenix form: "How did you hear about us?" field present');
+  else fail('event-staffing-phoenix form: hear_about_us field missing');
+  if (es.includes('script.google.com/macros/s/')) pass('event-staffing-phoenix form: posts to the Apps Script relay');
+  else fail('event-staffing-phoenix form: Apps Script action missing');
+  if (es.includes('href="tel:+14803300543"')) pass('event-staffing-phoenix: click-to-call 480-330-0543 present');
+  else fail('event-staffing-phoenix: click-to-call link missing');
+  for (const ev of ['quote_form_submit', 'click_to_call', 'quote_button_click']) {
+    if (es.includes(`'${ev}'`)) pass(`event-staffing-phoenix: Umami event wired: ${ev}`);
+    else fail(`event-staffing-phoenix: Umami event missing: ${ev}`);
+  }
+  if (es.includes("url: 'https://phoenixavstaffing.com/event-staffing-phoenix/'")) pass('event-staffing-phoenix: Umami events carry the page URL');
+  else fail('event-staffing-phoenix: Umami event URL is not the page URL');
+  const localVenues = ['Phoenix Convention Center', 'Sheraton Phoenix Downtown', 'Hyatt Regency Phoenix', 'Kimpton Palomar Phoenix', 'Arizona Biltmore'];
+  const missingLocal = localVenues.filter((v) => !es.includes(v));
+  if (missingLocal.length === 0) pass('event-staffing-phoenix: all five approved local-proof venues present');
+  else fail(`event-staffing-phoenix: local-proof venues missing: ${missingLocal.join(', ')}`);
+  const fullRoster = ['Phoenix Convention Center', 'Sheraton Phoenix Downtown', 'The Phoenician', 'Fairmont Scottsdale Princess', 'JW Marriott Camelback Inn', 'JW Marriott Desert Ridge', 'Arizona Biltmore', 'Arizona Grand Resort', 'Caesars Republic Scottsdale', 'Sanctuary Camelback Mountain', 'Four Seasons Resort Scottsdale', 'Omni Scottsdale Resort & Spa at Montelucia', 'Omni Tempe', 'Mountain Shadows Resort', 'The Scott Resort & Spa', 'Hotel Valley Ho', 'W Scottsdale', 'Andaz Scottsdale', 'The Global Ambassador', 'The Camby', 'Ritz-Carlton', 'State Farm Stadium', 'Talking Stick Resort', 'Wild Horse Pass', 'Gila River Resorts & Casinos', 'Hyatt Regency Phoenix', 'Kimpton Palomar Phoenix', 'Kimpton Miralina', 'Tempe Mission Palms', 'Renaissance Phoenix Glendale', 'Hilton Phoenix Tapatio Cliffs', 'Phoenix Marriott Resort Tempe at The Buttes', 'Scottsdale Marriott at McDowell Mountains', 'Hilton Scottsdale', 'DoubleTree Resorts & Suites', 'Embassy Suites', 'Sonesta Suites', 'Hotel Adeline', 'The Remi', 'Cambria', 'SpringHill Suites', 'Aloft', 'Courtyard by Marriott', 'AC Hotel', 'Westin', 'The McCormick', 'SLS'];
+  const stray = fullRoster.filter((v) => !localVenues.includes(v) && es.includes(v));
+  if (stray.length === 0) pass('event-staffing-phoenix: local proof uses ONLY the five approved venues (no other roster names)');
+  else fail(`event-staffing-phoenix: non-local roster venues present: ${stray.join(', ')}`);
+  for (const link of ['href="/av-labor/"', 'href="/av-staffing/"', 'href="/"']) {
+    if (es.includes(link)) pass(`event-staffing-phoenix: internal link present: ${link}`);
+    else fail(`event-staffing-phoenix: internal link missing: ${link}`);
+  }
+  let esTypes = new Set();
+  let esLdOk = true;
+  for (const b of [...es.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1])) {
+    try {
+      const walk = (o) => {
+        if (Array.isArray(o)) return o.forEach(walk);
+        if (o && typeof o === 'object') {
+          if (o['@type']) (Array.isArray(o['@type']) ? o['@type'] : [o['@type']]).forEach((t) => esTypes.add(t));
+          Object.values(o).forEach(walk);
+        }
+      };
+      walk(JSON.parse(b));
+    } catch { esLdOk = false; }
+  }
+  if (esLdOk && esTypes.has('ProfessionalService') && esTypes.has('Service') && !/AggregateRating/.test(es)) pass('event-staffing-phoenix: valid schema (ProfessionalService + Service), no review markup');
+  else fail(`event-staffing-phoenix: schema problem (types: ${[...esTypes].join(', ') || 'none'})`);
+  const esMainText = (es.match(/<main>([\s\S]*?)<\/main>/) || [])[1] || '';
+  const esWords = esMainText.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  if (esWords >= 500) pass(`event-staffing-phoenix: ${esWords} words of page copy (gate: 500+)`);
+  else fail(`event-staffing-phoenix: only ${esWords} words of page copy (gate: 500+)`);
+  const proofStart = es.indexOf('id="phoenix-proof"');
+  const proofEnd = proofStart >= 0 ? es.indexOf('<section', proofStart + 10) : -1;
+  const proofText = proofStart >= 0 && proofEnd > proofStart ? es.slice(proofStart, proofEnd) : '';
+  const proofWords = proofText.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  if (proofWords >= 300) pass(`event-staffing-phoenix: ${proofWords} words of Phoenix-specific copy (gate: 300+)`);
+  else fail(`event-staffing-phoenix: only ${proofWords} words of Phoenix-specific copy (gate: 300+)`);
+  if (locs.includes(ES_URL)) pass('sitemap lists /event-staffing-phoenix/');
+  else fail('sitemap does not list /event-staffing-phoenix/');
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
