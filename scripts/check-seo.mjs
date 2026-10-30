@@ -213,5 +213,89 @@ if (!existsSync(join(root, 'av-labor/index.html'))) {
   else fail('sitemap does not list /av-labor/');
 }
 
+
+// --- /av-staffing/ page (Job 2 PR 3) -------------------------------------------
+if (html.includes('href="/av-staffing/"')) pass('homepage links to /av-staffing/ (Crew section, two-door line)');
+else fail('homepage: no link to /av-staffing/');
+const ST_URL = 'https://phoenixavstaffing.com/av-staffing/';
+if (!existsSync(join(root, 'av-staffing/index.html'))) {
+  fail('av-staffing/index.html missing');
+} else {
+  const st = read('av-staffing/index.html');
+  const avAgain = read('av-labor/index.html');
+  const homeTitle2 = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+  const homeMeta2 = (html.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+  const stRoster = ['Phoenix Convention Center', 'Sheraton Phoenix Downtown', 'The Phoenician', 'Fairmont Scottsdale Princess', 'JW Marriott Camelback Inn', 'JW Marriott Desert Ridge', 'Arizona Biltmore', 'Arizona Grand Resort', 'Caesars Republic Scottsdale', 'Sanctuary Camelback Mountain', 'Four Seasons Resort Scottsdale', 'Omni Scottsdale Resort & Spa at Montelucia', 'Omni Tempe', 'Mountain Shadows Resort', 'The Scott Resort & Spa', 'Hotel Valley Ho', 'W Scottsdale', 'Andaz Scottsdale', 'The Global Ambassador', 'The Camby', 'Ritz-Carlton', 'State Farm Stadium', 'Talking Stick Resort', 'Wild Horse Pass', 'Gila River Resorts & Casinos', 'Hyatt Regency Phoenix', 'Kimpton Palomar Phoenix', 'Kimpton Miralina', 'Tempe Mission Palms', 'Renaissance Phoenix Glendale', 'Hilton Phoenix Tapatio Cliffs', 'Phoenix Marriott Resort Tempe at The Buttes', 'Scottsdale Marriott at McDowell Mountains', 'Hilton Scottsdale', 'DoubleTree Resorts & Suites', 'Embassy Suites', 'Sonesta Suites', 'Hotel Adeline', 'The Remi', 'Cambria', 'SpringHill Suites', 'Aloft', 'Courtyard by Marriott', 'AC Hotel', 'Westin', 'The McCormick', 'SLS'];
+  const stCanonicals = [...st.matchAll(/<link\s+rel="canonical"\s+href="([^"]+)"/g)].map((m) => m[1]);
+  if (stCanonicals.length === 1 && stCanonicals[0] === ST_URL) pass('av-staffing: canonical self-referencing https://phoenixavstaffing.com/av-staffing/');
+  else fail(`av-staffing: canonical found ${JSON.stringify(stCanonicals)}`);
+  const stH1s = [...st.matchAll(/<h1[\s>]/g)].length;
+  const stH1Text = (st.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '';
+  const avH1Text2 = (avAgain.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '';
+  if (stH1s === 1 && stH1Text.includes('AV staffing') && stH1Text !== avH1Text2) pass('av-staffing: exactly one <h1>, contains the primary keyword "AV staffing", distinct from /av-labor/');
+  else fail(`av-staffing: <h1> count ${stH1s}, text "${stH1Text.replace(/<[^>]+>/g, '').slice(0, 60)}"`);
+  const stTitle = (st.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+  const avTitle2 = (avAgain.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+  if (stTitle === 'AV Staffing Services in Phoenix, AZ | ACAV LLC' && stTitle !== homeTitle2 && stTitle !== avTitle2) pass(`av-staffing: unique title — "${stTitle}"`);
+  else fail(`av-staffing: title problem — "${stTitle}"`);
+  const stMeta = (st.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+  const avMeta2 = (avAgain.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+  if (stMeta.includes('AV staffing services') && !/subcontract/i.test(stMeta) && stMeta !== homeMeta2 && stMeta !== avMeta2) pass('av-staffing: unique meta, planner framing, no subcontract language');
+  else fail('av-staffing: meta description problem');
+  for (const price of ['$350', '$650', '$1000']) {
+    if (st.includes(price) && st.includes('Estimate')) pass(`av-staffing: tier price ${price} present, estimate-marked`);
+    else fail(`av-staffing: tier price ${price} / estimate marking missing`);
+  }
+  if (st.includes('500+')) pass('av-staffing: 500+ shows crewed present');
+  else fail('av-staffing: "500+" shows claim missing');
+  if (st.includes('Crew confirmed within 24 hours, guaranteed')) pass('av-staffing: approved 24-hour claim present');
+  else fail('av-staffing: approved claim missing');
+  if (/insured/i.test(st)) pass('av-staffing: insured framing present');
+  else fail('av-staffing: insured framing missing');
+  if (st.includes('Request a quote') && !st.includes('Request crew') && !st.toLowerCase().includes('call sheet')) pass('av-staffing: request-a-quote CTA; /av-labor/ language ("Request crew", "call sheet") kept out');
+  else fail('av-staffing: CTA / differentiation problem');
+  if (st.includes('name="hear_about_us"')) pass('av-staffing form: "How did you hear about us?" field present');
+  else fail('av-staffing form: hear_about_us field missing');
+  if (st.includes('script.google.com/macros/s/')) pass('av-staffing form: posts to the Apps Script relay');
+  else fail('av-staffing form: Apps Script action missing');
+  if (st.includes('href="tel:+14803300543"')) pass('av-staffing: click-to-call 480-330-0543 present');
+  else fail('av-staffing: click-to-call link missing');
+  for (const ev of ['quote_form_submit', 'click_to_call', 'quote_button_click']) {
+    if (st.includes(`'${ev}'`)) pass(`av-staffing: Umami event wired: ${ev}`);
+    else fail(`av-staffing: Umami event missing: ${ev}`);
+  }
+  if (st.includes("url: 'https://phoenixavstaffing.com/av-staffing/'")) pass('av-staffing: Umami events carry the page URL');
+  else fail('av-staffing: Umami event URL is not the page URL');
+  const onPageSt = stRoster.filter((v) => st.includes(v));
+  if (onPageSt.length >= 6) pass(`av-staffing: venue roster subset from the approved list (${onPageSt.length} venues)`);
+  else fail(`av-staffing: only ${onPageSt.length} approved roster venues on the page (need 6+)`);
+  for (const link of ['href="/av-labor/"', 'href="/event-staffing-phoenix/"', 'href="/"']) {
+    if (st.includes(link)) pass(`av-staffing: internal link present: ${link}`);
+    else fail(`av-staffing: internal link missing: ${link}`);
+  }
+  let stTypes = new Set();
+  let stLdOk = true;
+  for (const b of [...st.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1])) {
+    try {
+      const walk = (o) => {
+        if (Array.isArray(o)) return o.forEach(walk);
+        if (o && typeof o === 'object') {
+          if (o['@type']) (Array.isArray(o['@type']) ? o['@type'] : [o['@type']]).forEach((t) => stTypes.add(t));
+          Object.values(o).forEach(walk);
+        }
+      };
+      walk(JSON.parse(b));
+    } catch { stLdOk = false; }
+  }
+  if (stLdOk && stTypes.has('Service') && !/AggregateRating/.test(st)) pass('av-staffing: valid schema (Service), no review markup');
+  else fail(`av-staffing: schema problem (types: ${[...stTypes].join(', ') || 'none'})`);
+  const stMainText = (st.match(/<main>([\s\S]*?)<\/main>/) || [])[1] || '';
+  const stWords = stMainText.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  if (stWords >= 500) pass(`av-staffing: ${stWords} words of page copy (gate: 500+)`);
+  else fail(`av-staffing: only ${stWords} words of page copy (gate: 500+)`);
+  if (locs.includes(ST_URL)) pass('sitemap lists /av-staffing/');
+  else fail('sitemap does not list /av-staffing/');
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

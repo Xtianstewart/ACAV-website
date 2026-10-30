@@ -10,6 +10,11 @@
       "path": "/av-labor/",
       "changefreq": "monthly",
       "priority": "0.8"
+    },
+    {
+      "path": "/av-staffing/",
+      "changefreq": "monthly",
+      "priority": "0.8"
     }
   ]
 }
