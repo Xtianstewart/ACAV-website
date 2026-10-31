@@ -411,5 +411,34 @@ if (!existsSync(join(root, 'event-staffing-phoenix/index.html'))) {
   else fail('sitemap does not list /event-staffing-phoenix/');
 }
 
+// --- Dropbox audience split (P2 DROPBOX, website half: CLIENT) --------------
+// Christian's 2026-10-30 decision: clients stay on the Dropbox route. The
+// CLIENT File Request lives here, in the homepage "For clients" documents
+// section, under the byte-exact offline label. The CREW File Request lives
+// in the crew portal only — it must never appear on this public site.
+const CLIENT_URL = 'https://www.dropbox.com/request/zacdkzym1pe91e9689fm';
+const CREW_URL = 'https://www.dropbox.com/request/vj7oa495v65678ea6juj';
+const OFFLINE_LABEL = 'Prefer to handle it offline? Download your agreements as PDFs, sign them, and upload your signed copies here.';
+const countIn = (hay, needle) => hay.split(needle).length - 1;
+if (countIn(html, CLIENT_URL) === 1) pass('dropbox: client File Request link present exactly once on the homepage');
+else fail(`dropbox: client File Request link found ${countIn(html, CLIENT_URL)} times on the homepage, expected 1`);
+const clientSectionStart = html.indexOf('id="client-documents-title"');
+const uploadIdx = html.indexOf('class="document-upload"');
+const clientLinkIdx = html.indexOf(CLIENT_URL);
+if (clientSectionStart !== -1 && uploadIdx > clientSectionStart && clientLinkIdx > uploadIdx) pass('dropbox: client link sits in the client documents section upload block');
+else fail('dropbox: client link is not inside the client documents section upload block');
+if (countIn(html, OFFLINE_LABEL) === 1) pass('dropbox: offline label present byte-exact, exactly once, on the homepage');
+else fail(`dropbox: offline label found ${countIn(html, OFFLINE_LABEL)} times on the homepage, expected 1`);
+const labelIdx = html.indexOf(OFFLINE_LABEL);
+if (labelIdx > uploadIdx && labelIdx < clientLinkIdx) pass('dropbox: label directly precedes the client upload link');
+else fail('dropbox: label does not directly precede the client upload link');
+if (!html.includes(CREW_URL) && !html.includes('vj7oa495v65678ea6juj')) pass('dropbox: crew File Request link absent from the homepage (audience split)');
+else fail('dropbox: crew File Request link present on the homepage — audience split broken');
+for (const page of ['av-labor/index.html', 'av-staffing/index.html', 'event-staffing-phoenix/index.html']) {
+  const body = read(page);
+  if (!body.includes(CLIENT_URL) && !body.includes(CREW_URL) && !body.includes(OFFLINE_LABEL)) pass(`dropbox: no File Request link or label on /${page.split('/')[0]}/ (split holds site-wide)`);
+  else fail(`dropbox: a File Request link or the offline label leaked onto ${page}`);
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
