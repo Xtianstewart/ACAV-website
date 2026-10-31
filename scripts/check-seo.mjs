@@ -214,22 +214,25 @@ if (!existsSync(join(root, 'av-labor/index.html'))) {
 }
 
 
-// --- Homepage hero image swap --------------------------------------------------
-if (html.includes('src="images/hero-full-throttle.jpg"')) pass('hero: img points at images/hero-full-throttle.jpg');
-else fail('hero: img does not point at images/hero-full-throttle.jpg');
-if (!html.includes('src="images/img-03.jpg"')) pass('hero: old img-03.jpg reference removed');
-else fail('hero: old img-03.jpg reference still present');
+// --- Homepage hero image (reverted to img-03 + grayscale) ----------------------
+// PR #17 swapped the hero to a color full-throttle image; Xtian's
+// 2026-10-30 ruling reverts it: img-03.jpg with the grayscale
+// treatment restored so the hero matches the rest of the site.
+if (html.includes('src="images/img-03.jpg"')) pass('hero: img points at images/img-03.jpg');
+else fail('hero: img does not point at images/img-03.jpg');
+if (!html.includes('src="images/hero-full-throttle.jpg"')) pass('hero: full-throttle reference removed');
+else fail('hero: full-throttle reference still present');
 const heroTag = (html.match(/<div class="hero-media"><img[^>]*>/) || [])[0] || '';
-if (heroTag.includes('alt="LED video wall lit red and blue at a corporate event"') && heroTag.includes('width="1228"') && heroTag.includes('height="1760"')) pass('hero: alt text and 1228x1760 dimensions set');
+if (heroTag.includes('alt="Concert arena filled with a crowd beneath dramatic spotlights"') && heroTag.includes('width="1320"') && heroTag.includes('height="1760"')) pass('hero: alt text and 1320x1760 dimensions set');
 else fail(`hero: img tag problem — ${heroTag.slice(0, 120)}`);
 const heroRule = (html.match(/\.hero-media img \{([^}]*)\}/) || [])[1] || '';
-if (!/grayscale/.test(heroRule) && heroRule.includes('filter: contrast(1.05) brightness(.92)') && heroRule.includes('object-fit: cover') && heroRule.includes('object-position: center 30%')) pass('hero: color exception — grayscale dropped, capped filter kept, cover/position unchanged');
+if (heroRule.includes('filter: grayscale(1) contrast(1.12) brightness(.62)') && heroRule.includes('object-fit: cover') && heroRule.includes('object-position: center 30%')) pass('hero: grayscale treatment restored, cover/position unchanged');
 else fail(`hero: CSS rule problem — ${heroRule}`);
 const tierRule = (html.match(/\.tier-image img \{([^}]*)\}/) || [])[1] || '';
-if (/grayscale\(1\)/.test(tierRule)) pass('hero-only exception: tier images remain grayscale');
-else fail('hero-only exception violated: tier images lost their grayscale');
-if (existsSync(join(root, 'images/hero-full-throttle.jpg'))) pass('hero: images/hero-full-throttle.jpg present in the repo');
-else fail('hero: images/hero-full-throttle.jpg missing from the repo');
+if (/grayscale\(1\)/.test(tierRule)) pass('hero: tier images remain grayscale');
+else fail('hero: tier images lost their grayscale');
+if (existsSync(join(root, 'images/img-03.jpg'))) pass('hero: images/img-03.jpg present in the repo');
+else fail('hero: images/img-03.jpg missing from the repo');
 // --- /av-staffing/ page (Job 2 PR 3) -------------------------------------------
 if (html.includes('href="/av-staffing/"')) pass('homepage links to /av-staffing/ (Crew section, two-door line)');
 else fail('homepage: no link to /av-staffing/');
