@@ -440,5 +440,62 @@ for (const page of ['av-labor/index.html', 'av-staffing/index.html', 'event-staf
   else fail(`dropbox: a File Request link or the offline label leaked onto ${page}`);
 }
 
+// --- AI search readiness (2026-11-08) ----------------------------------------
+// Christian's ask: phoenixavstaffing.com ready for OpenAI's "Claim your
+// business in ChatGPT" profiles and AI search generally (docs/
+// ai-search-readiness-spec.md). Pins: robots.txt explicitly allows
+// OAI-SearchBot and GPTBot; /llms.txt states the plain facts; and the
+// business JSON-LD on all four pages carries Christian's exact facts
+// (name, 4237 N 11th St address, phone, email) — the same facts as the
+// Google Business Profile.
+const robotsGroupFor = (agent) => {
+  const block = robots.split(/\n\s*\n/).find((g) => new RegExp(`^User-agent:\\s*${agent}\\s*$`, 'mi').test(g));
+  return block || '';
+};
+for (const agent of ['OAI-SearchBot', 'GPTBot']) {
+  const g = robotsGroupFor(agent);
+  if (g && /^Allow:\s*\/\s*$/m.test(g) && !/^Disallow:/m.test(g)) pass(`robots.txt explicitly allows ${agent}`);
+  else fail(`robots.txt does not explicitly allow ${agent}`);
+}
+if (existsSync(join(root, 'llms.txt'))) pass('llms.txt exists at the site root');
+else fail('llms.txt missing at the site root');
+const llms = existsSync(join(root, 'llms.txt')) ? read('llms.txt') : '';
+for (const fact of ['ACAV LLC', '4237 N 11th St', 'Phoenix, AZ 85014', '480-330-0543', 'info@phoenixavstaffing.com',
+  'Tier 1 Basic Support Labor', 'Tier 2 Skilled AV Technicians', 'Tier 3 Lead Operators']) {
+  if (llms.includes(fact)) pass(`llms.txt states: ${fact}`);
+  else fail(`llms.txt is missing: ${fact}`);
+}
+const BIZ_PAGES = [
+  ['homepage', 'index.html'],
+  ['av-labor', 'av-labor/index.html'],
+  ['av-staffing', 'av-staffing/index.html'],
+  ['event-staffing-phoenix', 'event-staffing-phoenix/index.html'],
+];
+for (const [label, path] of BIZ_PAGES) {
+  const page = read(path);
+  const biz = [];
+  const collectBiz = (o) => {
+    if (Array.isArray(o)) return o.forEach(collectBiz);
+    if (o && typeof o === 'object') {
+      const t = Array.isArray(o['@type']) ? o['@type'] : [o['@type']];
+      if (o.name === 'ACAV LLC' && (t.includes('LocalBusiness') || t.includes('ProfessionalService'))) biz.push(o);
+      Object.values(o).forEach(collectBiz);
+    }
+  };
+  let bizParseOk = true;
+  for (const b of [...page.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1])) {
+    try { collectBiz(JSON.parse(b)); } catch { bizParseOk = false; }
+  }
+  const good = biz.find((b) => b.address
+    && b.address.streetAddress === '4237 N 11th St'
+    && b.address.addressLocality === 'Phoenix'
+    && b.address.addressRegion === 'AZ'
+    && b.address.postalCode === '85014'
+    && typeof b.telephone === 'string' && b.telephone.includes('480-330-0543')
+    && b.email === 'info@phoenixavstaffing.com');
+  if (bizParseOk && good) pass(`${label}: business JSON-LD carries the exact facts (ACAV LLC, 4237 N 11th St, Phoenix AZ 85014, 480-330-0543, info@phoenixavstaffing.com)`);
+  else fail(`${label}: business JSON-LD missing or facts mismatch (${biz.length} business block(s) found)`);
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
