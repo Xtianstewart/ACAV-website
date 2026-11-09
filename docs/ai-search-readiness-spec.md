@@ -96,3 +96,14 @@ Support Labor", "Tier 2 Skilled AV Technicians", "Tier 3 Lead Operators".
 - Cloudflare, DNS, and crawler settings outside robots.txt. Block AI
   bots / Bot Fight Mode are never enabled on this site (Christian's
   standing call).
+
+## Follow-up — GBP alignment (2026-11-08)
+
+AgentX supplied the live Google Business Profile facts after the
+initial build (GBP account a.chris.stewart@gmail.com): category
+"Event management company"; tier labels "Tier 1 – Basic Support",
+"Tier 2 – Skilled Technicians", "Tier 3 – Lead Operators". At
+Marco's direction, `llms.txt` was aligned to that wording (category
+line added; tier labels switched from the homepage's longer names).
+The homepage's visible tier names and the schema blocks are
+unchanged; the harness now pins the GBP wording in llms.txt.

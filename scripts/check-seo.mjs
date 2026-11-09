@@ -461,7 +461,8 @@ if (existsSync(join(root, 'llms.txt'))) pass('llms.txt exists at the site root')
 else fail('llms.txt missing at the site root');
 const llms = existsSync(join(root, 'llms.txt')) ? read('llms.txt') : '';
 for (const fact of ['ACAV LLC', '4237 N 11th St', 'Phoenix, AZ 85014', '480-330-0543', 'info@phoenixavstaffing.com',
-  'Tier 1 Basic Support Labor', 'Tier 2 Skilled AV Technicians', 'Tier 3 Lead Operators']) {
+  'Event management company',
+  'Tier 1 – Basic Support', 'Tier 2 – Skilled Technicians', 'Tier 3 – Lead Operators']) {
   if (llms.includes(fact)) pass(`llms.txt states: ${fact}`);
   else fail(`llms.txt is missing: ${fact}`);
 }
