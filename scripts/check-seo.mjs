@@ -503,7 +503,9 @@ for (const [label, path] of BIZ_PAGES) {
 // (/images/* and the root icon files), HTML left on the current revalidate
 // policy (no Cache-Control for HTML anywhere in _headers — Cloudflare Pages
 // keeps serving it max-age=0). Step 0 (2026-11-06) measured images at
-// max-age=14400 (4 h); the rule below is the year-long immutable policy.
+// max-age=14400 (4 h). Owner decision (Christian, 2026-11-08): /images/*
+// runs the 30-day policy (filenames are generic and reused); the root
+// icons keep the year-long immutable policy.
 const headersRaw = read('_headers');
 const headerBlocks = {};
 let currentPath = null;
@@ -513,8 +515,9 @@ for (const line of headersRaw.split('\n')) {
   else if (currentPath) headerBlocks[currentPath].push(line.trim());
 }
 const IMMUTABLE_CC = 'Cache-Control: public, max-age=31536000, immutable';
-if (headerBlocks['/images/*'] && headerBlocks['/images/*'].includes(IMMUTABLE_CC)) pass('_headers: /images/* carries Cache-Control: public, max-age=31536000, immutable (spec 1.1)');
-else fail('_headers: /images/* is missing the spec 1.1 immutable cache rule');
+const IMAGES_CC = 'Cache-Control: public, max-age=2592000, immutable';
+if (headerBlocks['/images/*'] && headerBlocks['/images/*'].includes(IMAGES_CC)) pass('_headers: /images/* carries Cache-Control: public, max-age=2592000, immutable (spec 1.1, owner decision 2026-11-08)');
+else fail('_headers: /images/* is missing the spec 1.1 30-day cache rule (owner decision 2026-11-08)');
 for (const icon of ['/favicon.ico', '/favicon-32x32.png', '/favicon-48x48.png', '/favicon-512.png', '/apple-touch-icon.png']) {
   if (headerBlocks[icon] && headerBlocks[icon].includes(IMMUTABLE_CC)) pass(`_headers: ${icon} carries the spec 1.1 immutable cache rule`);
   else fail(`_headers: ${icon} is missing the spec 1.1 immutable cache rule`);
