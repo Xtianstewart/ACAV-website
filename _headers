@@ -15,3 +15,21 @@
 
 /W9-blank.pdf
   X-Robots-Tag: noindex
+
+/images/*
+  Cache-Control: public, max-age=2592000, immutable
+
+/favicon.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon-32x32.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon-48x48.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon-512.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=31536000, immutable
