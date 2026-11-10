@@ -214,14 +214,20 @@ if (!existsSync(join(root, 'av-labor/index.html'))) {
 }
 
 
-// --- Homepage hero image (reverted to img-03 + grayscale) ----------------------
+// --- Homepage hero image (img-03 payload + grayscale; canonical file img-01 since PR-B1)
 // PR #17 swapped the hero to a color full-throttle image; Xtian's
-// 2026-10-30 ruling reverts it: img-03.jpg with the grayscale
+// 2026-10-30 ruling reverts it: the img-03.jpg payload with the grayscale
 // treatment restored so the hero matches the rest of the site.
-if (html.includes('src="images/img-03.jpg"')) pass('hero: img points at images/img-03.jpg');
-else fail('hero: img does not point at images/img-03.jpg');
+// PR-B1 (2026-11-09) dedupe: img-01.jpg and img-03.jpg were byte-identical;
+// the canonical survivor is img-01.jpg (the preload already pointed there),
+// so the hero <img> now references img-01.jpg — same payload, same
+// grayscale treatment, and preload == hero src (no double download).
+if (html.includes('src="images/img-01.jpg"')) pass('hero: img points at images/img-01.jpg (canonical, PR-B1 dedupe)');
+else fail('hero: img does not point at images/img-01.jpg');
 if (!html.includes('src="images/hero-full-throttle.jpg"')) pass('hero: full-throttle reference removed');
 else fail('hero: full-throttle reference still present');
+if (!existsSync(join(root, 'images/hero-full-throttle.jpg'))) pass('hero: hero-full-throttle.jpg file deleted (PR-B1, was unreferenced)');
+else fail('hero: hero-full-throttle.jpg still present in the repo');
 const heroTag = (html.match(/<div class="hero-media"><img[^>]*>/) || [])[0] || '';
 if (heroTag.includes('alt="Concert arena filled with a crowd beneath dramatic spotlights"') && heroTag.includes('width="1320"') && heroTag.includes('height="1760"')) pass('hero: alt text and 1320x1760 dimensions set');
 else fail(`hero: img tag problem — ${heroTag.slice(0, 120)}`);
@@ -231,8 +237,8 @@ else fail(`hero: CSS rule problem — ${heroRule}`);
 const tierRule = (html.match(/\.tier-image img \{([^}]*)\}/) || [])[1] || '';
 if (/grayscale\(1\)/.test(tierRule)) pass('hero: tier images remain grayscale');
 else fail('hero: tier images lost their grayscale');
-if (existsSync(join(root, 'images/img-03.jpg'))) pass('hero: images/img-03.jpg present in the repo');
-else fail('hero: images/img-03.jpg missing from the repo');
+if (existsSync(join(root, 'images/img-01.jpg'))) pass('hero: images/img-01.jpg present in the repo');
+else fail('hero: images/img-01.jpg missing from the repo');
 // --- /av-staffing/ page (Job 2 PR 3) -------------------------------------------
 if (html.includes('href="/av-staffing/"')) pass('homepage links to /av-staffing/ (Crew section, two-door line)');
 else fail('homepage: no link to /av-staffing/');
@@ -528,6 +534,54 @@ else fail('_headers: /* block sets Cache-Control — HTML must keep revalidating
 const htmlCachePaths = Object.keys(headerBlocks).filter((p) => p === '/' || p.endsWith('.html'));
 if (htmlCachePaths.length === 0) pass('_headers: no HTML document path carries a cache rule');
 else fail(`_headers: unexpected cache rule path(s) for HTML: ${htmlCachePaths.join(', ')}`);
+
+// --- PR-B1 image dedupe + loading discipline (spec 3.1 / 3.4) -----------------
+import { readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+const pageFiles = ['index.html', 'av-labor/index.html', 'av-staffing/index.html', 'event-staffing-phoenix/index.html'];
+const pageTexts = pageFiles.map((p) => read(p));
+// (a) no duplicate payloads anywhere in images/
+const hashSeen = new Map();
+let dupFound = null;
+for (const f of readdirSync(join(root, 'images'))) {
+  const h = createHash('sha256').update(readFileSync(join(root, 'images', f))).digest('hex');
+  if (hashSeen.has(h)) { dupFound = `${f} duplicates ${hashSeen.get(h)}`; break; }
+  hashSeen.set(h, f);
+}
+if (!dupFound) pass('pr-b1: no duplicate image payloads in images/ (sha256 over every file)');
+else fail(`pr-b1: duplicate image payload — ${dupFound}`);
+// (b) homepage hero preload href == hero img src
+const preloadHref = (html.match(/<link rel="preload" href="([^"]+)" as="image"/) || [])[1];
+const heroSrc = (html.match(/<div class="hero-media"><img src="([^"]+)"/) || [])[1];
+if (preloadHref && heroSrc && preloadHref === heroSrc) pass(`pr-b1: hero preload == hero img src (${heroSrc}) — no double download`);
+else fail(`pr-b1: hero preload (${preloadHref}) != hero img src (${heroSrc})`);
+// (c) deleted duplicate filenames referenced nowhere in the pages or llms.txt
+const deletedNames = ['img-03.jpg', 'img-27.jpg', 'img-28.jpg', 'img-29.jpg', 'img-30.jpg', 'img-37.webp', 'img-38.jpg', 'img-39.jpg', 'img-40.jpg', 'img-41.jpg', 'hero-full-throttle.jpg'];
+const corpus = pageTexts.join('\n') + read('llms.txt');
+const stillReferenced = deletedNames.filter((n) => corpus.includes(n));
+if (stillReferenced.length === 0) pass('pr-b1: no deleted duplicate filename is referenced in any page or llms.txt');
+else fail(`pr-b1: deleted file(s) still referenced: ${stillReferenced.join(', ')}`);
+const stillPresent = deletedNames.filter((n) => existsSync(join(root, 'images', n)));
+if (stillPresent.length === 0) pass('pr-b1: all 11 duplicate/unreferenced files are absent from images/');
+else fail(`pr-b1: file(s) slated for deletion still present: ${stillPresent.join(', ')}`);
+// (d) og:image identical canonical URL on all 4 pages
+const ogImages = pageTexts.map((t) => (t.match(/<meta property="og:image" content="([^"]+)"/) || [])[1]);
+if (ogImages.every((u) => u === 'https://phoenixavstaffing.com/images/img-01.jpg')) pass('pr-b1: og:image is the canonical arena file (img-01.jpg) on all 4 pages');
+else fail(`pr-b1: og:image mismatch across pages: ${JSON.stringify(ogImages)}`);
+// (e) every <img> except the header logo carries loading="lazy" + width + height;
+//     the hero carries width + height (it stays eager by design)
+let lazyProblems = [];
+pageTexts.forEach((t, i) => {
+  for (const m of t.matchAll(/<img[^>]*>/g)) {
+    const tag = m[0];
+    const isLogo = tag.includes('img-02.webp') && !tag.includes('footer-mark');
+    const isHero = tag.includes('fetchpriority="high"');
+    if (!tag.includes('width="') || !tag.includes('height="')) lazyProblems.push(`${pageFiles[i]}: missing dimensions — ${tag.slice(0, 90)}`);
+    if (!isLogo && !isHero && !tag.includes('loading="lazy"')) lazyProblems.push(`${pageFiles[i]}: missing loading="lazy" — ${tag.slice(0, 90)}`);
+  }
+});
+if (lazyProblems.length === 0) pass('pr-b1: all content images carry width+height; all below-fold images carry loading="lazy" (spec 3.4)');
+else fail(`pr-b1: loading/dimension problems: ${lazyProblems.slice(0, 4).join(' | ')}`);
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
