@@ -583,5 +583,31 @@ pageTexts.forEach((t, i) => {
 if (lazyProblems.length === 0) pass('pr-b1: all content images carry width+height; all below-fold images carry loading="lazy" (spec 3.4)');
 else fail(`pr-b1: loading/dimension problems: ${lazyProblems.slice(0, 4).join(' | ')}`);
 
+// ---- Font weight 500 (spec §1.3 Option B, Christian's pick 2026-11-09) ----
+// IBM Plex Mono 600 was requested in CSS but never loaded; labels rendered at
+// 500. Option B makes the CSS honest: the 3 mono rules per page now ask for
+// 500. The Google Fonts request must not change (Mono 400/500 already loaded).
+const mono600 = [];
+const mono500ok = [];
+pageTexts.forEach((t, i) => {
+  const styles = [...t.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('\n');
+  for (const m of styles.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const body = m[2];
+    if (!body.includes('IBM Plex Mono') && !body.includes('var(--font-label)')) continue;
+    if (/font-weight:\s*600/.test(body) || /font:\s*600\s/.test(body)) mono600.push(`${pageFiles[i]}: ${m[1].trim().slice(0, 40)}`);
+  }
+  const okStat = (t.match(/font: 500 13px\/1\.2 "IBM Plex Mono"/g) || []).length === 1;
+  const okScopeBase = (t.match(/font: 500 12px\/1\.3 "IBM Plex Mono"/g) || []).length === 1;
+  const okScopeOverride = /\.scope-copy h3 \{\s*margin: 0 0 14px;\s*font-family: var\(--font-label\);[^}]*?font-weight: 500;/.test(t);
+  if (okStat && okScopeBase && okScopeOverride) mono500ok.push(pageFiles[i]);
+});
+if (mono600.length === 0) pass('font-500: no IBM Plex Mono rule requests weight 600 on any page (spec §1.3 Option B)');
+else fail(`font-500: mono rules still at 600: ${mono600.join(' | ')}`);
+if (mono500ok.length === 4) pass('font-500: .stat-label, .scope-copy h3 (base + override layer) read 500 on all 4 pages');
+else fail(`font-500: 500-weight rules incomplete on: ${pageFiles.filter((p) => !mono500ok.includes(p)).join(', ')}`);
+const fontsOk = pageTexts.every((t) => t.includes('family=IBM+Plex+Mono:wght@400;500') && !t.includes('IBM+Plex+Mono:wght@400;500;600'));
+if (fontsOk) pass('font-500: Google Fonts request unchanged on all 4 pages (Mono 400/500 only — zero added weight)');
+else fail('font-500: Google Fonts request changed — Mono 600 must NOT be loaded under Option B');
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
