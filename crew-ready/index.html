@@ -35,6 +35,11 @@
     ul { padding-left:22px; }
     li { margin:6px 0; }
     .consent-box { border:1px solid var(--line); padding:22px 24px; margin:22px 0; }
+    .consent-box .form-brand { display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:14px; margin:0 0 18px; }
+    .consent-box .form-brand .mark { font-family:"Metal Mania",serif; font-size:27px; letter-spacing:.02em; }
+    .consent-box .form-brand .who { font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+    .consent-box .form-brand .who a { text-transform:none; letter-spacing:.02em; }
+    footer .contact { text-transform:none; letter-spacing:.02em; }
     .consent-box label { display:flex; gap:12px; align-items:flex-start; font-size:20px; }
     .consent-box input[type="checkbox"] { width:20px; height:20px; margin-top:4px; flex:none; }
     .consent-box .phone-field { margin:0 0 18px; }
@@ -60,6 +65,7 @@
     <h2>1. Step 1 — Enter your mobile number and check the SMS consent box on your Portal profile</h2>
     <p>When a freelancer creates a profile on the Crew Portal at crew.phoenixavstaffing.com, the profile form collects the freelancer's mobile phone number and includes the SMS consent checkbox on the same form:</p>
     <div class="consent-box">
+      <p class="form-brand"><span class="mark">ACAV</span><span class="who">ACAV LLC — Crew Portal Profile · <!--email_off--><a href="mailto:info@phoenixavstaffing.com">info@phoenixavstaffing.com</a><!--/email_off--></span></p>
       <p class="phone-field"><label>Phone (US)
         <input type="tel" value="+1" placeholder="4805550100" autocomplete="tel" disabled>
       </label></p>
@@ -81,7 +87,7 @@
       <li>What we send. Availability confirmations, job-match alerts, and crew-request notifications related to your profile and availability. This is a coordination service, not advertising.</li>
       <li>Message frequency varies based on your availability status and matching work.</li>
       <li>Message and data rates may apply, depending on your mobile carrier and plan.</li>
-      <li>Opt out anytime: reply STOP to end messages. Reply HELP for help. You may also contact us at info@phoenixavstaffing.com or 480-330-0543.</li>
+      <li>Opt out anytime: reply STOP to end messages. Reply HELP for help. You may also contact us at <!--email_off-->info@phoenixavstaffing.com<!--/email_off--> or 480-330-0543.</li>
       <li>Consent is not a condition of working with ACAV or of receiving our services; opting out only means we will coordinate with you by other means.</li>
       <li>Mobile carriers are not liable for delayed or undelivered messages.</li>
     </ul>
@@ -90,6 +96,7 @@
   </div></main>
   <footer><div class="wrap">
     <span>ACAV LLC · Phoenix, Arizona</span>
+    <span class="contact">Contact: <!--email_off--><a href="mailto:info@phoenixavstaffing.com">info@phoenixavstaffing.com</a><!--/email_off--></span>
     <a href="/terms">Terms of Use</a>
     <a href="/privacy">Privacy Policy</a>
     <a href="/crew-ready">Crew Ready Opt-In</a>
